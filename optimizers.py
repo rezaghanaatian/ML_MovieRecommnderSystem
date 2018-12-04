@@ -172,7 +172,7 @@ class ALSOptimizer(optimizer):
         test_sql = sqlContext.createDataFrame(test).rdd
 
         # Train the model
-        model = ALS.train(train_sql, spark_context=self.spark_context, rank=self.rank, lambda_=self.lambda_, iterations=self.iterations)
+        model = ALS.train(train_sql, rank=self.rank, lambda_=self.lambda_, iterations=self.iterations)
 
         # Predict
         to_predict = test_sql.map(lambda p: (p[0], p[1]))
