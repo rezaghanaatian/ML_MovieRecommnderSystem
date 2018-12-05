@@ -265,6 +265,8 @@ class ALSNormalizedOptimizer(optimizer):
 
         # Normalize the train data - set all the mean to overall mean
         df_train_normalized = normalizer.normalize_deviation()
+        print ("******************")
+        print(df_train_normalized[:10])
 
         # Predict using the normalized trained data
         alsModel = ALSOptimizer(self.args)
