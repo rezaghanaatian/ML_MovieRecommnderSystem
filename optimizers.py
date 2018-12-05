@@ -12,6 +12,7 @@ from normalizer import Normalizer
 from pyspark.mllib.recommendation import ALS
 from pyspark.sql import SQLContext
 import os
+from helpers_v2 import *
 
 class optimizer(object):
     @abstractmethod
@@ -51,6 +52,9 @@ class GlobalMean(optimizer):
             return round(row.Prediction)
 
         output['Prediction'] = output.apply(round_pred, axis=1)
+        output['Rating'] = output['Prediction']
+        print(output[:20])
+        
         return output
     
 
@@ -88,6 +92,7 @@ class UserMean(optimizer):
 
         output['Prediction'] = output.apply(assign_mean, axis=1)
         output['Prediction'] = output.apply(round_pred, axis=1)
+        output['Rating'] = output['Prediction']
         return output
     
     
@@ -95,11 +100,11 @@ class MovieMean(optimizer):
     """
         Define the user mean model for recommendation. recommends based on movie's average rating.
 
-        Input:
+        Args:
             train (Pandas Dataframe) : train dataset
             test (Pandas Dataframe): test dataset
 
-        Output:
+        Returns:
             (Pandas Dataframe): test dataset with updated predictions calculated with movie mean
 
     """
@@ -126,6 +131,7 @@ class MovieMean(optimizer):
 
         output['Prediction'] = output.apply(assign_mean, axis=1)
         output['Prediction'] = output.apply(round_pred, axis=1)
+        output['Rating'] = output['Prediction']
         return output
 
 
@@ -164,7 +170,20 @@ class ALSOptimizer(optimizer):
         # Delete folders that cause trouble while running the code
         os.system('rm -rf metastore_db')
         os.system('rm -rf __pycache__')
-
+        
+       
+        train.Movie = train.Movie.astype(int)
+        train.Prediction = train.Prediction.astype(int)
+        train.Rating = train.Rating.astype(int)
+        
+        # Prepare the dataFrame to be used in ALS object instantiation with headings
+        # ['index','Prediction',User','Movie','Rating']
+        train = train.drop(['Prediction'], axis=1)
+        test = test.drop(['Prediction'], axis=1)
+        
+        
+        output = test.copy()
+        
         # Convert pd.DataFrame to Spark.rdd 
         sqlContext = SQLContext(self.spark_context)
 
@@ -172,7 +191,8 @@ class ALSOptimizer(optimizer):
         test_sql = sqlContext.createDataFrame(test).rdd
 
         # Train the model
-        model = ALS.train(train_sql, spark_context=self.spark_context, rank=self.rank, lambda_=self.lambda_, iterations=self.iterations)
+        print("[LOG] ALS training started; this may take a while!")
+        model = ALS.train(train_sql, rank=self.rank, lambda_=self.lambda_, iterations=self.iterations)
 
         # Predict
         to_predict = test_sql.map(lambda p: (p[0], p[1]))
@@ -180,20 +200,24 @@ class ALSOptimizer(optimizer):
 
         # Convert Spark.rdd back to pd.DataFrame
         output = predictions.toDF().toPandas()
+        
 
         # Postprocesse  database
         output['User'] = output['_1'].apply(lambda x: x['_1'])
         output['Movie'] = output['_1'].apply(lambda x: x['_2'])
-        output['Prediction'] = output['_2']
+        output['Rating'] = output['_2']
         output = output.drop(['_1', '_2'], axis=1)
+        output['Prediction'] = output['Rating']
         output = output.sort_values(by=['Movie', 'User'])
         output.index = range(len(output))
+      
         
         def round_pred(row):
             return round(row.Prediction)
         
         output['Prediction'] = output.apply(round_pred, axis=1)
-
+        output['Rating'] = output['Prediction']
+       
         return output
     
 
@@ -218,7 +242,7 @@ class ALSNormalizedOptimizer(optimizer):
             
 
     Output:
-        pandas.DataFrame: predictions, sorted as (Movie, User)
+        pandas.DataFrame: predictions, sorted as ['index', 'Prediction', 'User', 'Movie']
     """
     def __init__(self, args):
         self.rank = args.rank
@@ -229,21 +253,32 @@ class ALSNormalizedOptimizer(optimizer):
 
     
     def predict(self, train, test):
-    
+        
+        # Prepare the dataFrame to be used in normalizer object instantiation with headings 
+        # ['index',User','Movie','Rating']
+#         train = train.drop(['Prediction'], axis=1)
+#         test = test.drop(['Prediction'], axis=1)
+        
+        
         # Instantiate the Normalizer class
         normalizer = Normalizer(train)
 
         # Normalize the train data - set all the mean to overall mean
-        df_train_normalized = normlaizer.normalize_deviation()
+        df_train_normalized = normalizer.normalize_deviation()
 
         # Predict using the normalized trained data
         alsModel = ALSOptimizer(self.args)
         prediction_normalized = alsModel.predict(df_train_normalized, test)
+        prediction_normalized = dataFrameConvert(prediction_normalized)
 
         # Recover the prediction to recover the deviations
-        prediction = normalizer.recover_deviation(prediction_normalized)
+        output = normalizer.recover_deviation(prediction_normalized)
+        print ("Prediction HEAD:\n"+str(output.head()))
+        output ['Prediction'] = output['Rating']
         
-        return prediction
+        print ("Prediction HEAD:\n"+str(prediction.head()))
+        
+        return output
     
     
 class SGD(optimizer):

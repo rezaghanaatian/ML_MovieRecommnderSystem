@@ -37,7 +37,7 @@ def main(args):
     sc.setLogLevel("ERROR")
     
     
-    print("[LOG] Recommender System Modeling Started")
+    print("[LOG] Recommender System modeling started")
    
 
     #Load Datasets
@@ -46,8 +46,13 @@ def main(args):
 
     train_df = load_dataset(path_dataset)
     test_df = load_dataset(path_test_dataset)
-
-    # Use different models for prediction - create optimizer object
+    model = createOptimizer(args)
+    
+    # Add 'Rating' column that is the copy of 'Prediciotn' - this column is needed in some models such as ALS...
+    train_df['Rating'] = train_df['Prediction']
+    test_df ['Rating'] = test_df['Prediction']
+    
+    # Use different optimization models for prediction - create optimizer object
     model = createOptimizer(args)
     
     print("[LOG] Preparing model " + '\"'+ args.optimizer + '\"...')
@@ -79,7 +84,7 @@ def main(args):
     file_name = args.file_name
     output_folder = args.output_folder
     sub_df = create_submission_file(predictions, file_name, output_folder)
-    print("[LOG] Successfully wrote to file!"+ file_name)
+    print("[LOG] Successfully wrote to file "+ file_name)
 
     
 if __name__=="__main__":
