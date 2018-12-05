@@ -46,7 +46,6 @@ def main(args):
 
     train_df = load_dataset(path_dataset)
     test_df = load_dataset(path_test_dataset)
-    model = createOptimizer(args)
     
     # Add 'Rating' column that is the copy of 'Prediciotn' - this column is needed in some models such as ALS...
     train_df['Rating'] = train_df['Prediction']
