@@ -67,7 +67,7 @@ def main(args):
         tt = time.time()
 
         # Predict the ratings...
-#         predictions = models[m].predict(train_df, test_df)
+        predictions = models[m].predict(train_df, test_df)
         print("[LOG] Completed in %s\n" % (time_str(time.time() - tt)))
 
         # Cross-validation on train set and calculating RMSE
