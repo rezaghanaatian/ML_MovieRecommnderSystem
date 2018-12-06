@@ -254,32 +254,28 @@ class ALSNormalizedOptimizer(optimizer):
     
     def predict(self, train, test):
         
-        # Prepare the dataFrame to be used in normalizer object instantiation with headings 
-        # ['index',User','Movie','Rating']
-#         train = train.drop(['Prediction'], axis=1)
-#         test = test.drop(['Prediction'], axis=1)
-        
-        
         # Instantiate the Normalizer class
         normalizer = Normalizer(train)
 
         # Normalize the train data - set all the mean to overall mean
         df_train_normalized = normalizer.normalize_deviation()
-        print ("******************")
-        print(df_train_normalized[:10])
+       
 
         # Predict using the normalized trained data
         alsModel = ALSOptimizer(self.args)
         prediction_normalized = alsModel.predict(df_train_normalized, test)
-        prediction_normalized = dataFrameConvert(prediction_normalized)
+        
 
         # Recover the prediction to recover the deviations
         output = normalizer.recover_deviation(prediction_normalized)
-        print ("Prediction HEAD:\n"+str(output.head()))
+       
+        
+        def round_pred(row):
+            return round(row.Prediction)
+        
+        output['Prediction'] = output.apply(round_pred, axis=1)
         output ['Prediction'] = output['Rating']
-        
-        print ("Prediction HEAD:\n"+str(prediction.head()))
-        
+                
         return output
     
     
