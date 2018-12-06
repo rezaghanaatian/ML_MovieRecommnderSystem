@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Author: Zahra Farsijani
+# Autor: Zahra Farsijani
 # Version: 1.0
 #
 
@@ -31,7 +31,7 @@ def dict_mean_user(df):
 
 def dict_var_user(df):
     """ dictionary: key=UserID & value=User Mean """
-    return dict(df.groupby('User').var().Rating)
+    return dict(df.groupby('User').mean().Rating)
 
 
 def dict_dev_user(df):
@@ -59,12 +59,12 @@ class Normalizer(object):
         self.means = dict_mean_user(df)
         self.deviation = dict_dev_user(df)
         
-    def normalize_gaussian(self, df):
+    def normalize_gaussian(self):
         """ Return gaussian normalized dataframe - both mean and variance
         """
         gnorm_df = pd.DataFrame.copy(self.df)
-        gnorm_df['Prediction'] = self.df.apply(
-            lambda x: (x['Prediction'] - self.means[x['User']]) / self.variances[x['User']],
+        gnorm_df['Rating'] = self.df.apply(
+            lambda x: (x['Rating'] - self.means[x['User']]) / self.variances[x['User']],
             axis=1)
 
         return gnorm_df
@@ -73,18 +73,18 @@ class Normalizer(object):
         """ Recover from 'normalized' table
         """
         recovered_df = pd.DataFrame.copy(df)
-        recovered_df['Prediction'] = df.apply(
-            lambda x: (x['Prediction'] * self.variances[x['User']]) + self.means[x['User']],
+        recovered_df['Rating'] = df.apply(
+            lambda x: (x['Rating'] * self.variances[x['User']]) + self.means[x['User']],
             axis=1)
 
         return recovered_df
 
-    def normalize_mean(self,df):
+    def normalize_mean(self):
         """ Set all mean to 0
         """
         norm_df = pd.DataFrame.copy(self.df)
-        norm_df['Prediction'] = self.df.apply(
-            lambda x: x['Prediction'] - self.means[x['User']],
+        norm_df['Rating'] = self.df.apply(
+            lambda x: x['Rating'] - self.means[x['User']],
             axis=1)
 
         return norm_df
@@ -93,28 +93,33 @@ class Normalizer(object):
         """ Recover from 'normalized_only_mean' table
         """
         recovered_df = pd.DataFrame.copy(df)
-        recovered_df['Prediction'] = df.apply(
-            lambda x: x['Prediction'] + self.means[x['User']],
+        recovered_df['Rating'] = df.apply(
+            lambda x: x['Rating'] + self.means[x['User']],
             axis=1)
 
         return recovered_df
 
-    def normalize_deviation(self,df):
+    def normalize_deviation(self):
         """ Set all the mean to overall mean (BEST METHOD)
         """
         norm_df = pd.DataFrame.copy(self.df)
-        norm_df['Prediction'] = self.df.apply(
-            lambda x: x['Prediction'] - self.deviation[x['User']],
+        norm_df['Rating'] = self.df.apply(
+            lambda x: x['Rating'] - self.deviation[x['User']],
             axis=1)
-
+        
+        def round_pred(row):
+            return round(row.Prediction)
+        
+        norm_df['Rating'] = norm_df.apply(round_pred, axis=1)
+        norm_df['Prediction'] = norm_df['Rating']
         return norm_df
 
     def recover_deviation(self, df):
         """ Recover from 'normalized_deviation' table
         """
         recovered_df = pd.DataFrame.copy(df)
-        recovered_df['Prediction'] = data_frame.apply(
-            lambda x: x['Prediction'] + self.deviation[x['User']],
+        recovered_df['Rating'] = df.apply(
+            lambda x: x['Rating'] + self.deviation[x['User']],
             axis=1)
 
         return recovered_df

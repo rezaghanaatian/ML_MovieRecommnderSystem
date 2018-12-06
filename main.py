@@ -56,6 +56,7 @@ def main(args):
     print("[LOG] Recommender System modeling started")
     models = {}
     error = {}
+    
     # Use different optimization models for prediction - create optimizer dictionary object 
     for m in all_models:
         
@@ -65,13 +66,14 @@ def main(args):
         print("[LOG] Preparing model " + '\"'+ args.optimizer + '\"...')
         tt = time.time()
 
-        # Predict 
-        predictions = models[m].predict(train_df, test_df)
+        # Predict the ratings...
+#         predictions = models[m].predict(train_df, test_df)
         print("[LOG] Completed in %s\n" % (time_str(time.time() - tt)))
 
         # Cross-validation on train set and calculating RMSE
         tt_cv = time.time()
         n_folds = args.n_folds
+   
         print("[LOG] Now running cross-validation...")
         error[m] = cross_validator(models[m], train_df, n_folds)
         print("[LOG] Cross-validation done!")
@@ -126,7 +128,7 @@ def main(args):
         'knn_ib_rescaled': 0.34178799145510136,
         'knn_ub': 0.21758562399412981,
         'knn_ub_rescaled': 0.12803210410741006
-    }
+        }
         
         
         print("[LOG] Now blending models...")
@@ -153,7 +155,7 @@ if __name__=="__main__":
     
     parser = argparse.ArgumentParser(description="")
     
-    parser.add_argument('--optimizer', type=str, default="als_normalized",  help='Name of the optimizer: als,\
+    parser.add_argument('--optimizer', type=str, default="als",  help='Name of the optimizer: als,\
        als_normalized, global_mean, user_mean, movie_mean, sgd, blended, all')
     parser.add_argument('--rank', type=int, default=8, help='rank(i.e. number of latent factors)')
     parser.add_argument('--lambda_', type=float, default=0.081, help='lambda in ALS optimizer')
