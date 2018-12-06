@@ -274,7 +274,7 @@ class ALSNormalizedOptimizer(optimizer):
             return round(row.Prediction)
         
         output['Prediction'] = output.apply(round_pred, axis=1)
-        output ['Prediction'] = output['Rating']
+        output ['Rating'] = output['Prediction']
                 
         return output
     
