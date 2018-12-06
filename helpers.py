@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import scipy.sparse as sp
 
 
 def load_dataset(path_dataset):
@@ -21,8 +22,9 @@ def load_dataset(path_dataset):
 
     # Map each user-movie to their corresponding prediction
     output = df.join(user_movie_df)
-    output = output.drop(columns=['Id'])
-
+    #output = output.drop(columns=['Id'])
+    output = output.drop(labels=["Id"], axis=1)
+    
     # Remove "r" before id of each user
     output['User'] = output['User'].map(lambda x: x.lstrip('r').rstrip('')).astype(int)
 
@@ -66,7 +68,7 @@ def split_data(X, folds):
 
 def compute_error(data_gt, data_pred):
     """
-        compute the loss (MSE) of the prediction.
+        compute the loss (RMSE) of the prediction.
 
         Input:
             data_gt: (Pandas Dataframe) Data ground truth
@@ -75,6 +77,24 @@ def compute_error(data_gt, data_pred):
     mse = 0
     for index, row in data_gt.iterrows():
         mse += (data_gt.Prediction[index] - data_pred.Prediction[index]) ** 2
+    return np.sqrt(1.0 * mse / len(data_gt))
+
+
+def compute_error2(data_gt, data_pred):
+    """
+        compute the loss (RMSE) of the prediction.
+
+        Input:
+            data_gt: (Pandas Dataframe) Data ground truth
+            data_pred: (Pandas Dataframe) Data prediction
+    """
+    mse = 0
+    gt_sp = df_to_sp(data_gt)
+    nz_row, nz_col = gt_sp.nonzero()
+    nz_gt = list(zip(nz_row, nz_col))
+    pred_sp = df_to_sp(data_pred)
+    for d, n in nz_gt:
+         mse += (gt_sp[d,n] - pred_sp[d,n]) **2
     return np.sqrt(1.0 * mse / len(data_gt))
 
 
@@ -103,7 +123,7 @@ def cross_validator(model, dataset, n_fold=5):
             X_train = X_train.append(X_s[j], ignore_index=True)
 
         pred = model(X_train, X_test)
-        err = compute_error(X_test, pred)
+        err = compute_error2(X_test, pred)
         errors.append(err)
 
     return np.mean(errors)
@@ -135,3 +155,33 @@ def create_submission_file(prediction, output_name="submission.csv"):
 
     output[['Id', 'Prediction']].to_csv(output_folder + output_name, index=False)
     return output[['Id', 'Prediction']]
+
+
+def df_to_sp(df):
+    """ Convert a pandas.DataFrame to a scipy.sparse matrix """
+
+    n_user = df['User'].max()
+    n_movie = df['Movie'].max()
+
+    sp_matrix = sp.lil_matrix((n_movie, n_user))
+
+    users = df['User']
+    movies = df['Movie']
+    prediction = df['Prediction']
+
+    for m, u, p in zip(movies, users, prediction):
+        sp_matrix[m - 1, u - 1] = p
+
+    return sp_matrix
+
+def sp_to_df(sparse):
+    """ Convert scipy.sparse matrix to pandas.DataFrame """
+
+    row, col, pred = sp.find(sparse)
+    row += 1
+    col += 1
+
+    df = pd.DataFrame({'Prediction': pred, 'User': col, 'Movie': row})
+    df = df[['Prediction', 'User', 'Movie']].sort_values(['Movie', 'User'])
+    df=df.reset_index(drop=True)
+    return df
