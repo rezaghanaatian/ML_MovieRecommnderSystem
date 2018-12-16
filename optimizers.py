@@ -14,6 +14,11 @@ from pyspark.sql import SQLContext
 import os
 from helpers_v2 import *
 
+import scipy.sparse as sp
+from surprise.prediction_algorithms import SVD
+from surprise import Reader, Dataset
+from surprise.model_selection import train_test_split
+
 class optimizer(object):
     @abstractmethod
     def compute_prediction(self, prediction):
@@ -378,5 +383,4 @@ def createOptimizer(args):
         return ALSNormalizedOptimizer(args)
     elif args.optimizer == "sgd":
         return SGD(args)
-    
-    
+

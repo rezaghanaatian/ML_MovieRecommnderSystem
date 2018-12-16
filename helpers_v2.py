@@ -21,7 +21,8 @@ def load_dataset(path_dataset):
 
     # Map each user-movie to their corresponding prediction
     output = df.join(user_movie_df)
-    output = output.drop(columns=['Id'])
+    #output = output.drop(columns=['Id'])
+    output = output.drop(labels=["Id"], axis=1)
 
     # Remove "r" before id of each user
     output['User'] = output['User'].map(lambda x: x.lstrip('r').rstrip('')).astype(int)

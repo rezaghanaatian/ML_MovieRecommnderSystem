@@ -129,6 +129,38 @@ def cross_validator(model, dataset, n_fold=5):
     return np.mean(errors)
 
 
+def cross_validator_param_opt(model, dataset, n_fold, **kwargs):
+    """
+        Split dataset to some folds and do cross validation with input model
+
+        Input:
+            model: (Function) Data ground truth
+            dataset: (Pandas Dataframe) Data prediction
+            n_folds: (Integer) number of folds
+            **kwarg: arguments to be passed to the model
+
+        Output:
+            (Float) cross-validated error of prediction using input model
+    """
+
+    X_s = split_data(dataset, n_fold)
+    errors = []
+    for i in range(n_fold):
+        X_test = X_s[i]
+        X_train = pd.DataFrame(columns=X_test.columns)
+
+        for j in range(n_fold):
+            if i == j:
+                continue
+            X_train = X_train.append(X_s[j], ignore_index=True)
+
+        pred = model(X_train, X_test, **kwargs)
+        err = compute_error2(X_test, pred)
+        errors.append(err)
+
+    return np.mean(errors)
+
+
 def create_submission_file(prediction, output_name="submission.csv"):
     """
         Generate submission file for uploading on Kaggle and save it in output folder.

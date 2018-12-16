@@ -51,9 +51,9 @@ def matrix_factorization_sgd(train, test, **kwargs):
     """
    
     # hyper parameter
-    gamma = 0.01#kwargs['gamma']
+    gamma = kwargs['gamma']#0.01
     nb_epochs = 20
-    nb_latent = 20
+    nb_latent = kwargs['nb_latent']#20
     lambda_user = 0.1
     lambda_movie = 0.7
     
@@ -75,8 +75,8 @@ def matrix_factorization_sgd(train, test, **kwargs):
     nz_train = list(zip(nz_row, nz_col))
     
     
-    err_tr = compute_error_sp(train_sp, user_features, movie_features, nz_train)
-    print("iter: {}, RMSE on train set: {}...".format(0, err_tr))
+    #err_tr = compute_error_sp(train_sp, user_features, movie_features, nz_train)
+    #print("iter: {}, RMSE on train set: {}...".format(0, err_tr))
     
     # the gradient loop
     for it in range(nb_epochs):
@@ -95,8 +95,8 @@ def matrix_factorization_sgd(train, test, **kwargs):
             movie_features[d, :] -= gamma * grad_movie
             user_features[n, :] -= gamma * grad_user
             
-        err_tr = compute_error_sp(train_sp, user_features, movie_features, nz_train)
-        print("iter: {}, RMSE on train set: {}...".format(it+1, err_tr))
+        #err_tr = compute_error_sp(train_sp, user_features, movie_features, nz_train)
+        #print("iter: {}, RMSE on train set: {}...".format(it+1, err_tr))
             
     # do the prediction and fill the test set
     test_sp = df_to_sp(test)
@@ -114,6 +114,7 @@ def matrix_factorization_sgd(train, test, **kwargs):
         test_sp[row, col] = pred
     
     test_pred = sp_to_df(test_sp)
+    
     err_ts = compute_error2(test, test_pred)
     print("RMSE on test set: {}.".format(err_ts))
    
@@ -232,3 +233,18 @@ error_sgd_rescaled = cross_validator(matrix_factorization_sgd_normalized, train_
 
 #%%
 error_sgd_rescaled = cross_validator(matrix_factorization_sgd_normalized, train_df, 5)
+
+#%% Optimizing the parameters
+gamma_list = [0.02, 0.01, 0.005]
+nb_latent_list = [10, 20, 30]
+error_list = []
+param_list = []
+for gm in gamma_list:
+    for fac in nb_latent_list:
+         print("gamma: {} factors: {}".format(gm,fac))
+         error = cross_validator_param_opt(matrix_factorization_sgd, train_df, 5, gamma=gm, nb_latent=fac)
+         error_list.append(error)
+         param_list.append(set([gm,fac]))
+
+error_list.index(np.min(error_list))
+param_list[error_list.index(np.min(error_list))]

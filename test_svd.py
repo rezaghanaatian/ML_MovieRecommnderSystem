@@ -2,7 +2,7 @@
 """
 Created on Sun Dec  2 16:48:24 2018
 
-@author: SONY
+@author: Reza Ghanaatian
 """
 
 import pandas as pd
@@ -45,9 +45,9 @@ def matrix_factorization_svd(train, test, **kwargs):
     
     # hyper parameters
     n_epochs = 30#kwargs['n_epochs']
-    n_factors = 30#kwargs['n_factors']
+    n_factors = 10#kwargs['n_factors']
     lr_all = 0.001#kwargs['lr_all']
-    reg_all = 0.001#kwargs['lr_all']
+    reg_all = 0.01#kwargs['reg_all']
     
     # set the parameters for SVD
     algo = SVD(n_factors=n_factors,n_epochs=n_epochs,lr_all=lr_all,reg_all=reg_all)
@@ -69,14 +69,18 @@ def matrix_factorization_svd(train, test, **kwargs):
     nz_movie, nz_user = test_sp.nonzero()
     nz_test = list(zip(nz_movie, nz_user))
     for movie, user in nz_test:
-        pred = algo.predict(user+1,movie+1,verbose=False)
-        #if pred > 5:
-        #    pred= 5
-        #elif pred < 1:
-        #    pred = 1  
-        test_sp[movie, user] = np.round(pred.est)
+        val = algo.predict(user+1,movie+1,verbose=False)
+        if val.est > 5:
+            pred= 5
+        elif val.est < 1:
+            pred = 1
+        else:
+            pred = np.round(val.est)
+                
+        test_sp[movie, user] = pred
     
     test_pred = sp_to_df(test_sp)
+    
     err_ts = compute_error2(test, test_pred)
     print("RMSE on test set: {}.".format(err_ts))
     
@@ -159,7 +163,9 @@ def matrix_factorization_svd_normalized(train, test, **kwargs):
     err_ts = compute_error2(test, test_pred)
     print("RMSE on test set after rescaling: {}.".format(err_ts))
     
-    return test_pred    
+    return test_pred
+
+#%% testing the algorithm    
 #%%
 train_df2 = train_df.head(1000)
 train_df3= train_df.head(100000);
@@ -185,3 +191,19 @@ error_svd_rescaled = cross_validator(matrix_factorization_svd_normalized, train_
 
 #%%
 error_svd_rescaled = cross_validator(matrix_factorization_svd_normalized, train_df, 5)
+
+#%% Optimizing the parameters
+lr_list = [0.01, 0.005, 0.001, 0.0005]
+reg_list = [0.1, 0.01, 0.005, 0.001, 0.0005]
+error_list = []
+param_list = []
+for lr in lr_list:
+    for reg in reg_list:
+         print("lr: {} reg: {}".format(lr,reg))
+         error = cross_validator_param_opt(matrix_factorization_svd, train_df, 5, lr_all=lr, reg_all=reg)
+         error_list.append(error)
+         param_list.append(set([lr,reg]))
+
+error_list.index(np.min(error_list))
+param_list[error_list.index(np.min(error_list))]
+
