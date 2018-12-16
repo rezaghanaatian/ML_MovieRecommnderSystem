@@ -33,10 +33,9 @@ class GlobalMean(optimizer):
     """
     
     def __init__(self, args):
-        self.rank = args.rank
-        self. lambda_ = args.lambda_
+        
         self.iterations = args.iterations
-        self.spark_context = args.spark_context
+        
         
         
     def predict(self, train, test):
@@ -52,11 +51,19 @@ class GlobalMean(optimizer):
             return round(row.Prediction)
 
         output['Prediction'] = output.apply(round_pred, axis=1)
-        output['Rating'] = output['Prediction']
-        print(output[:20])
-        
+        output['Rating'] = output['Prediction']    
         return output
     
+    def get_params(self):
+        params = []
+        params = [self.iterations]
+        return params 
+    
+    def set_params(self,params):
+        
+        self.iterations = args.iterations
+    
+         
 
 class UserMean(optimizer):
     """
@@ -70,10 +77,12 @@ class UserMean(optimizer):
             output(Pandas Dataframe): test dataset with updated predictions calculated with global mean
     """
     def __init__(self, args):
+        
+        self.iterations = args.iterations
         self.rank = args.rank
         self. lambda_ = args.lambda_
-        self.iterations = args.iterations
         self.spark_context = args.spark_context
+        self.args = args
         
     def predict(self, train, test):    
         
@@ -95,6 +104,17 @@ class UserMean(optimizer):
         output['Rating'] = output['Prediction']
         return output
     
+    def get_params(self):
+        params = []
+        params = [self.iterations]
+        return params 
+    
+    def set_params(self,params):
+        
+        self.iterations = args.iterations
+    
+        
+        
     
 class MovieMean(optimizer):
     """
@@ -109,10 +129,7 @@ class MovieMean(optimizer):
 
     """
     def __init__(self, args):
-        self.rank = args.rank
-        self. lambda_ = args.lambda_
         self.iterations = args.iterations
-        self.spark_context = args.spark_context
         
     def predict(self, train, test):
 
@@ -134,7 +151,14 @@ class MovieMean(optimizer):
         output['Rating'] = output['Prediction']
         return output
 
-
+    def get_params(self):
+        params = []
+        params = [self.iterations]
+        return params 
+    
+    def set_params(self,params):
+        
+        self.iterations = args.iterations
     
     
 class ALSOptimizer(optimizer):
@@ -219,7 +243,24 @@ class ALSOptimizer(optimizer):
         output['Rating'] = output['Prediction']
        
         return output
+        
+    def get_params(self):
+        params = []
+        params = [self.rank ,\
+                  self. lambda_,\
+                  self.iterations,\
+                  self.spark_context]
+        return params 
     
+    def set_params(self,params):
+        
+        self.rank = args.rank
+        self. lambda_ = args.lambda_
+        self.iterations = args.iterations
+        self.args = args
+                        
+        
+
 
 class ALSNormalizedOptimizer(optimizer):
     
@@ -278,6 +319,21 @@ class ALSNormalizedOptimizer(optimizer):
                 
         return output
     
+    def get_params(self):
+        params = []
+        params = [self.rank ,\
+                  self. lambda_,\
+                  self.iterations,\
+                  self.spark_context]
+        return params 
+    
+    def set_params(self,params):
+        
+        self.rank = args.rank
+        self. lambda_ = args.lambda_
+        self.iterations = args.iterations
+        self.args = args
+         
     
 class SGD(optimizer):
     
@@ -291,8 +347,23 @@ class SGD(optimizer):
         #TO DO 
         raise NotImplementedError('This optimizer should be implemented!')
 
-        return output 
-
+        return output
+    def get_params(self):
+        params = []
+        params = [self.rank ,\
+                  self. lambda_,\
+                  self.iterations,\
+                  self.spark_context]
+        return params 
+    
+    def set_params(self,params):
+        
+        self.rank = args.rank
+        self. lambda_ = args.lambda_
+        self.iterations = args.iterations
+        self.args = args
+        
+        
 def createOptimizer(args):
     
     if args.optimizer == "global_mean":

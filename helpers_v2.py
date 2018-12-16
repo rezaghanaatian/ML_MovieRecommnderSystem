@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-
-
+import os, sys
 
 def load_dataset(path_dataset):
     """
@@ -129,6 +128,10 @@ def cross_validator(model, dataset, n_fold):
 
     return np.mean(errors)
 
+def unified_ordering(df):
+    """ Order pandas.DataFrame by ('Movie', 'User') and reset index """
+    return df.sort_values(['Movie', 'User']).reset_index(drop=True)
+
 
 def blender(models, weights):
     """
@@ -248,3 +251,8 @@ def dataFrameRecover(df):
    
     return df
 
+def create_folder(folder_name):
+    """ check if folder exists to avoid error and create it if not """
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    
