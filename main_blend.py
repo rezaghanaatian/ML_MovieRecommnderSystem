@@ -84,7 +84,7 @@ def main(args):
         model = createOptimizer(args)
         print("[LOG] Predicting and storing model " + model_name) # 
         tt = time.time()
-        cv.k_fold_predictions_and_store(train_df, model, model_name, True, args)#models[model_name]['params'])
+        cv.k_fold_predictions_and_store(train_df, model, model_name, False, args)#models[model_name]['params'])
         print("[LOG] Completed in %s\n" % (time_str(time.time() - tt)))
 
     # Delete the cross-validator object to free memory
@@ -109,7 +109,7 @@ def main(args):
     x0 = 1 / len(model_names) * np.ones(len(model_names))
 
     # carry out the Optimization for the blending
-    print("[LOG] Optimization for the blending started..." + '\n' + "Please be patient!")
+    print("[LOG] Optimization for the blending started...")
     
     res = sco.minimize(eval_, x0, method='SLSQP', args=(cv, models), options={'maxiter': 1000, 'disp': True})
 
