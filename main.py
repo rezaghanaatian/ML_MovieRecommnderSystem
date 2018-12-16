@@ -103,11 +103,11 @@ def main(args):
         
         # Initialize weights needed for combining models
         weights = {
-        'global_mean': 1.7756776068889906,
+        'global_mean': 0.2,
         'global_median': 1.8469393889491512,
-        'user_mean': -3.6424669808916055,
+        'user_mean': 0.2,
         'user_median': 0.0051375146192670111,
-        'movie_mean': -0.83307991660204828, #float(1)/n_models, #
+        'movie_mean': 0.2, #float(1)/n_models, #
         'movie_mean_rescaled': -0.95695560022481185,
         'movie_median': -0.93869701618369406,
         'movie_median_rescaled': -0.91347225736204185,
@@ -119,8 +119,8 @@ def main(args):
         'mf_rr_rescaled': 0.035378890871598068,
         'mf_sgd': -0.78708629851314926,
         'mf_sgd_rescaled': 0.27624842029358976,
-        'als': 0.30659162734621315,
-        'als_normalized': 0.31745406600610854,
+        'als': 0.2,
+        'als_normalized': 0.2,
         'pyfm': 0.15296423817447555,
         'pyfm_rescaled': -0.021626658245201873,
         'baseline': -0.70720719475460081,
