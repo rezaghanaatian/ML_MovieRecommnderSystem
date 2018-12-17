@@ -16,6 +16,7 @@ from helpers_v2 import *
 from helpers import df_to_sp, sp_to_df
 
 import scipy.sparse as sp
+
 from surprise.prediction_algorithms import SVD
 from surprise import Reader, Dataset
 from surprise.model_selection import train_test_split
@@ -480,7 +481,63 @@ class SGDNormalized(optimizer):
         return test_pred
        
 
-
+class MySVD(optimizer):
+    """
+    matrix factorization using SVD from surprise library
+    
+    input
+        train:      pandas dataframe
+        test:       pandas dataframe
+        **kwargs:   arbitrary keyword argument
+        
+    output
+        pandas dataframe: prediction
+    """
+    def __init__(self, args):
+        self.args = args
+        
+        
+    def predict(self, train, test):
+        # hyper parameters
+        n_epochs = 30
+        n_factors = 10
+        lr_all = 0.001
+        reg_all = 0.01
+        
+        # set the parameters for SVD
+        algo = SVD(n_factors=n_factors,n_epochs=n_epochs,lr_all=lr_all,reg_all=reg_all)
+        
+        #chnage the column order based on the reader requirment
+        train = train[['User','Movie','Prediction']]
+        
+        #create test set method 2
+        reader = Reader(line_format='user item rating', sep=',')
+        data = Dataset.load_from_df(train,reader)
+        trainset = data.build_full_trainset()
+        
+        # training
+        algo.fit(trainset)
+        
+        # prediction
+        test_sp = df_to_sp(test)
+        nz_movie, nz_user = test_sp.nonzero()
+        nz_test = list(zip(nz_movie, nz_user))
+        for movie, user in nz_test:
+            val = algo.predict(user+1,movie+1,verbose=False)
+            if val.est > 5:
+                pred= 5
+            elif val.est < 1:
+                pred = 1
+            else:
+                pred = np.round(val.est)
+                    
+            test_sp[movie, user] = pred
+        
+        test_pred = sp_to_df(test_sp)
+        return test_pred
+        
+        
+        
         
 def createOptimizer(args):
     
@@ -498,4 +555,6 @@ def createOptimizer(args):
         return SGD(args)
     elif args.optimizer == "sgd_normalized":
         return SGDNormalized(args)
+    elif args.optimizer == "svd":
+        return MySVD(args)
 
