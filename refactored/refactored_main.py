@@ -1,11 +1,7 @@
 # import models
-from optimizers import createOptimizer
 from helpers_v2 import *
-from pyspark import SparkContext, SparkConf
 import argparse
 import time
-from optimizers_knn import SurpriseKNN
-from refactored.models_mean import GlobalMean
 from refactored.prediction_model import PredictionModel
 
 """ load dataset """
@@ -17,29 +13,6 @@ def main(args):
     print("[LOG] START")
     print("============")
 
-
-    # TODO: Can we move this part to __init__ of its model?
-    # print("[LOG] Starting Spark...")
-    #
-    # # configure and start spark
-    # conf = (SparkConf()
-    #         .setMaster("local")
-    #         .setAppName("My app")
-    #         .set("spark.executor.memory", "1g")
-    #         )
-    # sc = SparkContext(conf=conf)
-    # args.spark_context = sc
-    #
-    # # test if spark works
-    # if sc is not None:
-    #     print("[LOG] Spark successfully initiated!")
-    # else:
-    #     print("[ERROR] Problem with spark, check your configuration")
-    #     exit()
-    #
-    # # Hide spark log information
-    # sc.setLogLevel("ERROR")
-
     # Load Datasets
     path_dataset = "../data/data_train.csv"
     path_test_dataset = "../data/sample_submission.csv"
@@ -49,10 +22,8 @@ def main(args):
 
     # Initialize models here:
     prediction_models = []
-    prediction_models.append(GlobalMean(train_df))
+    # prediction_models.append(GlobalMean(train_df))
     # prediction_models.append(SurpriseKNN(train_df, k=50, user_based=False))
-    # prediction_models.append(SurpriseKNN(train_df, k=50, user_based=False))
-    # TODO add other models
 
     print("[LOG] Recommendation System modeling started")
     predictions = []
@@ -66,8 +37,10 @@ def main(args):
         tt = time.time()
 
         predictions.append(model.predict(test_df))
-        print(predictions[0].head(5))
         print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
+
+    for prediction in predictions:
+        print(prediction.head(5))
 
     print("[LOG] blending models...")
     # blend = blender(models, weights)

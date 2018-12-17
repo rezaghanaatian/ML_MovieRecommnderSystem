@@ -5,7 +5,7 @@ from refactored.prediction_model import PredictionModel
 
 class SurpriseModel(PredictionModel):
     """
-
+        A class for using surprise library
     """
 
     def __init__(self, train_df):
@@ -30,11 +30,11 @@ class SurpriseModel(PredictionModel):
         else:
             print("model has not been initialized.")
 
-        pred = test.copy()
-        for index, row in pred.iterrows():
-            pred.Prediction = round(self.model.predict(row.User, row.Movie, clip=True).est)
+        output = test.copy()
+        for index, row in output.iterrows():
+            output.Prediction = round(self.model.predict(row.User, row.Movie, clip=True).est)
 
-        return pred
+        return output
 
     def cross_validate(self, k_fold=5):
         """
@@ -66,3 +66,9 @@ class SurpriseKNN(SurpriseModel):
         else:
             self.model = KNNWithMeans(k=self.neighbors_num,
                                       sim_options={'user_based': self.is_user_based})
+
+    def cross_validate(self, k_fold=5):
+        super(SurpriseKNN, self).cross_validate(k_fold)
+
+    def predict(self, test):
+        super(SurpriseKNN, self).predict(test)

@@ -11,7 +11,7 @@ class PredictionModel:
         Args:
             train (Pandas Dataframe) : train dataset with headers: ['User','Movie','Prediction']
         """
-        self.train_df = train_df
+        self.train_df = train_df.copy()
 
     @classmethod
     def get_name(cls):
