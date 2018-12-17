@@ -13,6 +13,7 @@ from pyspark.mllib.recommendation import ALS
 from pyspark.sql import SQLContext
 import os
 from helpers_v2 import *
+from helpers import df_to_sp, sp_to_df
 
 import scipy.sparse as sp
 from surprise.prediction_algorithms import SVD
@@ -341,18 +342,81 @@ class ALSNormalizedOptimizer(optimizer):
          
     
 class SGD(optimizer):
+    """
+    matrix factorization using SGD 
     
+    input
+        train:      pandas dataframe
+        test:       pandas dataframe
+        **kwargs:   arbitrary keyword argument
+        
+    output
+        pandas dataframe: prediction
+    """
     def __init__(self, args):
         self.args = args
         
         
     def predict(self, train, test):
-        output = test.copy()
-        
-        #TO DO 
-        raise NotImplementedError('This optimizer should be implemented!')
 
-        return output
+        # hyper parameter
+        gamma = 0.02
+        nb_epochs = 20
+        nb_latent = 30
+        lambda_user = 0.1
+        lambda_movie = 0.7
+        
+        # init 
+        D = max(np.max(train.Movie),np.max(test.Movie))
+        N = max(np.max(train.User),np.max(test.User))
+        K = nb_latent 
+        np.random.seed(988)
+        movie_features = np.random.rand(D,K)
+        user_features = np.random.rand(N,K)
+        
+        # convert to scipy.sparse matrices
+        train_sp = df_to_sp(train)
+        
+        # find the non-zero indices
+        nz_row, nz_col = train_sp.nonzero()
+        nz_train = list(zip(nz_row, nz_col))
+              
+        # the gradient loop
+        for it in range(nb_epochs):
+            # shuffle the training rating indices
+            np.random.shuffle(nz_train)
+            
+            # decrease step size
+            gamma /= 1.2
+        
+            for d, n in nz_train:
+                # matrix factorization.
+                err = train_sp[d, n] - np.dot(movie_features[d, :], user_features[n, :].T)
+                grad_movie = -err * user_features[n, :] + lambda_movie * movie_features[d, :]
+                grad_user = -err * movie_features[d, :] + lambda_user * user_features[n, :]
+        
+                movie_features[d, :] -= gamma * grad_movie
+                user_features[n, :] -= gamma * grad_user
+                
+        # do the prediction and fill the test set
+        test_sp = df_to_sp(test)
+        nz_row, nz_col = test_sp.nonzero()
+        nz_test = list(zip(nz_row, nz_col))
+        X_pred = np.round(np.dot(movie_features, user_features.T))
+        for row, col in nz_test:
+            val = X_pred[row, col]
+            if val > 5:
+                pred= 5
+            elif val < 1:
+                pred = 1
+            else:
+                pred = val
+            test_sp[row, col] = pred
+        
+        test_pred = sp_to_df(test_sp)
+        return test_pred
+
+
     def get_params(self):
         params = []
         params = [self.rank ,\
@@ -367,7 +431,56 @@ class SGD(optimizer):
         self. lambda_ = args.lambda_
         self.iterations = args.iterations
         self.args = args
+ 
+
+class SGDNormalized(optimizer):
+    """
+    matrix factorization using SGD with normalization
+    
+    input
+        train:      pandas dataframe
+        test:       pandas dataframe
+        **kwargs:   arbitrary keyword argument
         
+    output
+        pandas dataframe: prediction
+    """    
+    def __init__(self, args):
+        self.args = args
+        
+        
+    def predict(self, train, test):
+        
+        train['Rating'] = train['Prediction']
+        #train = train.rename(index=str, columns={"Prediction" : "Rating"})
+        
+        # instance normalizer
+        normalizer = Normalizer(train)
+        
+        # do the normalization
+        train_normalized = normalizer.normalize_deviation()
+        train['Prediction'] = train['Rating']
+        train_normalized = train_normalized.drop(labels=["Rating"], axis=1)
+        
+        # Predict using the normalized trained data
+        sgdmodel = SGD('')
+        test_pred_normalized = sgdmodel.predict(train_normalized, test)
+        
+        #rescale the prediction to recover the actual mean
+        test_pred_normalized['Rating'] = test_pred_normalized['Prediction']
+        test_pred = normalizer.recover_deviation(test_pred_normalized)
+        test_pred['Prediction'] = test_pred['Rating']
+        test_pred = test_pred.drop(labels=["Rating"], axis=1)
+        
+        def round_pred(row):
+            return round(row.Prediction)
+        
+        test_pred['Prediction'] = test_pred.apply(round_pred, axis=1)
+        
+        return test_pred
+       
+
+
         
 def createOptimizer(args):
     
@@ -383,4 +496,6 @@ def createOptimizer(args):
         return ALSNormalizedOptimizer(args)
     elif args.optimizer == "sgd":
         return SGD(args)
+    elif args.optimizer == "sgd_normalized":
+        return SGDNormalized(args)
 

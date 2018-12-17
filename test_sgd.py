@@ -39,7 +39,7 @@ def compute_error_sp(data, user_features, movie_features, nz):
 #%%
 def matrix_factorization_sgd(train, test, **kwargs):
     """
-    matrix factorization using SGD from surprise library with normalization
+    matrix factorization using SGD 
     
     input
         train:      pandas dataframe
@@ -51,9 +51,9 @@ def matrix_factorization_sgd(train, test, **kwargs):
     """
    
     # hyper parameter
-    gamma = kwargs['gamma']#0.01
+    gamma = kwargs['gamma']#0.02
     nb_epochs = 20
-    nb_latent = kwargs['nb_latent']#20
+    nb_latent = kwargs['nb_latent']#30
     lambda_user = 0.1
     lambda_movie = 0.7
     

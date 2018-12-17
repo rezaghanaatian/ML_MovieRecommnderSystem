@@ -54,7 +54,7 @@ def main(args):
     # List of all models implemented in optimizers.py
     if args.optimizer=='blended' or args.optimizer=='all':
         print("[LOG] All models will be run.")
-        all_models = ['global_mean', 'movie_mean', 'user_mean', 'als', 'als_normalized']
+        all_models = ['global_mean', 'movie_mean', 'user_mean', 'als', 'als_normalized', 'sgd', 'sgd_normalized']
     else:
         all_models = [args.optimizer]
     
