@@ -1,4 +1,5 @@
 import time
+import scipy.optimize as sco
 
 from prediction_model import PredictionModel
 
@@ -25,20 +26,18 @@ class Blender(PredictionModel):
             if not issubclass(type(model), PredictionModel):
                 continue
 
-            print("[LOG] Preparing model === {0} ===".format(model.get_name()))
+            # print("[LOG] Preparing model === {0} ===".format(model.get_name()))
             tt = time.time()
             model.fit(self.train_df)
             predictions.append(model.predict(test_df))
-            print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
+            # print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
 
         output = test_df.copy()
         output.Prediction = 0
 
         # Use each model's weight to generate the final prediction
         for i in range(len(self.models)):
-            model = self.models[i]
-            prediction = predictions[i]
-            output.Prediction += self.weights[model.get_name()] * prediction.Prediction
+            output.Prediction += self.weights[i] * predictions[i].Prediction
 
         def round_prediction(row):
             value = round(row.Prediction)
@@ -48,3 +47,28 @@ class Blender(PredictionModel):
 
         output['Prediction'] = output.apply(round_prediction, axis=1)
         return output
+
+    @staticmethod
+    def tune_weights(models, train_df):
+        """
+        tune weights of models in blending
+        :param models: models to be used in blending
+        :param train_df: train data for calculating RMSE by cross-validation
+        :return: the found best weights for given models
+        """
+        num = len(models)
+        init_weights = []
+        for i in range(len(models)):
+            init_weights.append(1 / num)
+
+        result = sco.minimize(evaluate_weights, init_weights, args=(models, train_df),
+                              options={'maxiter': 5, 'disp': True})
+        return result.x
+
+
+def evaluate_weights(weights, models, train_df):
+    blender = Blender(models=models, weights=weights)
+    blender.fit(train_df)
+    rmse = blender.cross_validate()
+    # print("{0} --- > {1}".format(weights, rmse))
+    return rmse
