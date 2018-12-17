@@ -1,4 +1,3 @@
-from models import global_mean, user_mean, movie_mean
 from helpers import load_dataset, create_submission_file
 from optimizers_knn import SurpriseKNN
 from optimizers_median import GlobalMedian

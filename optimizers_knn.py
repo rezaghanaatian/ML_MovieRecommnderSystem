@@ -1,8 +1,9 @@
 from surprise import Reader, Dataset, KNNWithMeans, KNNBaseline
 from surprise.model_selection import cross_validate
+from refactored.prediction_model import PredictionModel
 
 
-class SurpriseModel:
+class SurpriseModel(PredictionModel):
     """
 
     """
@@ -10,7 +11,7 @@ class SurpriseModel:
     def __init__(self, train_df):
         reader = Reader(rating_scale=(1, 5))
         train_data = Dataset.load_from_df(train_df[['User', 'Movie', 'Prediction']], reader)
-        self.train_df = train_data
+        super(SurpriseModel, self).__init__(train_df=train_data)
         self.model = None
 
     def predict(self, test):
@@ -46,9 +47,6 @@ class SurpriseModel:
             output (float): Average RMSE in cross-validation
         """
         cross_validate(self.model, self.train_df, measures=['RMSE', 'MAE'], cv=k_fold)
-
-
-
 
 
 class SurpriseKNN(SurpriseModel):
