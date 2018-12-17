@@ -13,9 +13,6 @@ class GlobalMean(PredictionModel):
         output.Prediction = round(global_mean_train)
         return output
 
-    def cross_validate(self, k_fold=5):
-        pass
-
 
 class UserMean(PredictionModel):
     """
@@ -36,9 +33,6 @@ class UserMean(PredictionModel):
         output['Prediction'] = output.apply(assign_mean, axis=1)
         return output
 
-    def cross_validate(self, k_fold=5):
-        pass
-
 
 class MovieMean(PredictionModel):
     """
@@ -58,6 +52,3 @@ class MovieMean(PredictionModel):
 
         output['Prediction'] = output.apply(assign_mean, axis=1)
         return output
-
-    def cross_validate(self, k_fold=5):
-        pass

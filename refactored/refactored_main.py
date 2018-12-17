@@ -1,8 +1,9 @@
-# import models
-from helpers_v2 import *
 import argparse
 import time
-from refactored.prediction_model import PredictionModel
+from helpers import load_dataset
+from refactored.models_blender import Blender
+from refactored.models_mean import GlobalMean
+from refactored.models_median import GlobalMedian
 
 """ load dataset """
 
@@ -22,41 +23,25 @@ def main(args):
 
     # Initialize models here:
     prediction_models = []
-    # prediction_models.append(GlobalMean(train_df))
-    # prediction_models.append(SurpriseKNN(train_df, k=50, user_based=False))
+    global_mean = GlobalMean()
+    prediction_models.append(global_mean)
+    global_median = GlobalMedian()
+    prediction_models.append(global_median)
+    # prediction_models.append(SurpriseKNN(k=50, user_based=False))
 
-    print("[LOG] Recommendation System modeling started")
-    predictions = []
+    weights = {
+        global_mean.get_name(): 0.5,
+        global_median.get_name(): 0.5,
+    }
 
-    for model in prediction_models:
-
-        if not issubclass(type(model), PredictionModel):
-            continue
-
-        print("[LOG] Preparing model === {0} ===".format(model.get_name()))
-        tt = time.time()
-
-        predictions.append(model.predict(test_df))
-        print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
-
-    for prediction in predictions:
-        print(prediction.head(5))
-
-    print("[LOG] blending models...")
-    # blend = blender(models, weights)
+    blender_model = Blender(models=prediction_models, weights=weights)
+    blender_model.fit(train_df)
+    pred = blender_model.predict(test_df)
+    print(pred.head(10))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
-
-    parser.add_argument('--optimizer', type=str, default="als", help='Name of the optimizer: als,\
-       als_normalized, global_mean, user_mean, movie_mean, sgd, blended, all')
-    parser.add_argument('--rank', type=int, default=8, help='rank(i.e. number of latent factors)')
-    parser.add_argument('--lambda_', type=float, default=0.081, help='lambda in ALS optimizer')
-    parser.add_argument('--iterations', type=int, default=24, help='Number of iterations')
-    parser.add_argument('--n_folds', type=int, default=5, help='Number of folds used in cross-validation')
-    parser.add_argument('--output_folder', type=str, default="output/", help='Output folder address')
-    parser.add_argument('--file_name', type=str, default="sub", help='Name of submission file w/o .csv')
-
+    parser.add_argument('--sample', type=int, default=0, help='Help text!')
     args = parser.parse_args()
     main(args)

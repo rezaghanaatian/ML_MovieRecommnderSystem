@@ -1,3 +1,4 @@
+import numpy as np
 from surprise import Reader, Dataset, KNNWithMeans, KNNBaseline
 from surprise.model_selection import cross_validate
 from refactored.prediction_model import PredictionModel
@@ -8,11 +9,14 @@ class SurpriseModel(PredictionModel):
         A class for using surprise library
     """
 
-    def __init__(self, train_df):
+    def __init__(self):
+        super(SurpriseModel, self).__init__()
+        self.model = None
+
+    def fit(self, train_df):
         reader = Reader(rating_scale=(1, 5))
         train_data = Dataset.load_from_df(train_df[['User', 'Movie', 'Prediction']], reader)
-        super(SurpriseModel, self).__init__(train_df=train_data)
-        self.model = None
+        super(SurpriseModel, self).fit(train_df=train_data)
 
     def predict(self, test):
         """
@@ -37,16 +41,7 @@ class SurpriseModel(PredictionModel):
         return output
 
     def cross_validate(self, k_fold=5):
-        """
-        Does cross validation on train_set
-
-        Args:
-            k_folds (Integer) : number of folds used in cross validation
-
-        Returns:
-            output (float): Average RMSE in cross-validation
-        """
-        cross_validate(self.model, self.train_df, measures=['RMSE', 'MAE'], cv=k_fold)
+        return np.mean(cross_validate(self.model, self.train_df, measures=['RMSE', 'MAE'], cv=k_fold).test_rmse)
 
 
 class SurpriseKNN(SurpriseModel):
@@ -54,8 +49,8 @@ class SurpriseKNN(SurpriseModel):
     is_user_based = True
     use_baseline = True
 
-    def __init__(self, train, k=neighbors_num, user_based=is_user_based, baseline=use_baseline):
-        super(SurpriseKNN, self).__init__(train_df=train)
+    def __init__(self, k=neighbors_num, user_based=is_user_based, baseline=use_baseline):
+        super(SurpriseKNN, self).__init__()
         self.neighbors_num = k
         self.is_user_based = user_based
         self.use_baseline = baseline

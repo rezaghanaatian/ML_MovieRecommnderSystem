@@ -13,9 +13,6 @@ class GlobalMedian(PredictionModel):
         output.Prediction = global_median_train
         return output
 
-    def cross_validate(self, k_fold=5):
-        pass
-
 
 class UserMedian(PredictionModel):
     """
@@ -36,9 +33,6 @@ class UserMedian(PredictionModel):
         output['Prediction'] = output.apply(assign_median, axis=1)
         return output
 
-    def cross_validate(self, k_fold=5):
-        pass
-
 
 class MovieMedian(PredictionModel):
     """
@@ -58,6 +52,3 @@ class MovieMedian(PredictionModel):
 
         output['Prediction'] = output.apply(assign_median, axis=1)
         return output
-
-    def cross_validate(self, k_fold=5):
-        pass
