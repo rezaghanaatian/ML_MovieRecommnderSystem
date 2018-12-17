@@ -5,7 +5,7 @@ from abc import abstractmethod
 from helpers import split_data, compute_error
 
 
-class PredictionModel:
+class PredictionModel(object):
     """
     Abstract class for predictions
     """

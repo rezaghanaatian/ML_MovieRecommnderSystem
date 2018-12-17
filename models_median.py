@@ -1,4 +1,4 @@
-from refactored.prediction_model import PredictionModel
+from prediction_model import PredictionModel
 
 
 class GlobalMedian(PredictionModel):

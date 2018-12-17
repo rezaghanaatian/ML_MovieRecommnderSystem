@@ -1,5 +1,6 @@
 import time
-from refactored.prediction_model import PredictionModel
+
+from prediction_model import PredictionModel
 
 
 class Blender(PredictionModel):
@@ -10,7 +11,7 @@ class Blender(PredictionModel):
     def __init__(self, weights, models):
         super(Blender, self).__init__()
         if len(models) != len(weights):
-            print("Warning!\n Size of models and weights should be the same!")
+            raise Exception('Size of models and weights should be the same!')
 
         self.weights = weights
         self.models = models
@@ -31,6 +32,7 @@ class Blender(PredictionModel):
             print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
 
         output = test_df.copy()
+        output.Prediction = 0
 
         # Use each model's weight to generate the final prediction
         for i in range(len(self.models)):

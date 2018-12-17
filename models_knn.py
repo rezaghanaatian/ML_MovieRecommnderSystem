@@ -1,7 +1,8 @@
 import numpy as np
 from surprise import Reader, Dataset, KNNWithMeans, KNNBaseline
 from surprise.model_selection import cross_validate
-from refactored.prediction_model import PredictionModel
+
+from prediction_model import PredictionModel
 
 
 class SurpriseModel(PredictionModel):
