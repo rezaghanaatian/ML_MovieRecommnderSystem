@@ -8,7 +8,7 @@ from models_mean import GlobalMean, UserMean, MovieMean
 from models_median import GlobalMedian, MovieMedian, UserMedian
 from models_als import ALSOptimizer
 from models_sgd import SGDOptimizer
-from models_svd import SurpriseSVD
+from models_svd import SurpriseSVD, SurpriseSVDpp
 
 
 """ load dataset """
@@ -47,9 +47,11 @@ def main(args):
     #prediction_models.append(als)
     #sgd = SGDOptimizer()
     #prediction_models.append(sgd)
-    svd = SurpriseSVD()
-    prediction_models.append(sgd)
-
+    #svd = SurpriseSVD()
+    #prediction_models.append(svd)
+    svdpp = SurpriseSVDpp()
+    prediction_models.append(svdpp)
+    
     # best_weights = Blender.tune_weights(prediction_models, train_df)
     # print(best_weights)
 

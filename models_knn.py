@@ -67,4 +67,5 @@ class SurpriseKNN(SurpriseModel):
         return super(SurpriseKNN, self).cross_validate(k_fold)
 
     def predict(self, test):
+        print(self.model)
         return super(SurpriseKNN, self).predict(test)
