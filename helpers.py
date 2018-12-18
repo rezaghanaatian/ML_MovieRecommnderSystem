@@ -114,6 +114,7 @@ def cross_validator(model, dataset, n_fold=5):
     X_s = split_data(dataset, n_fold)
     errors = []
     for i in range(n_fold):
+        print('========== Fold {} of {} =========='.format(i+1, n_fold))
         X_test = X_s[i]
         X_train = pd.DataFrame(columns=X_test.columns)
 
@@ -122,8 +123,11 @@ def cross_validator(model, dataset, n_fold=5):
                 continue
             X_train = X_train.append(X_s[j], ignore_index=True)
 
-        pred = model(X_train, X_test)
+        #pred = model(X_train, X_test)
+        model.fit(X_train)
+        pred = model.predict(X_test)
         err = compute_error2(X_test, pred)
+        print('error = {}\n'.format(err))
         errors.append(err)
 
     return np.mean(errors)
@@ -219,3 +223,29 @@ def sp_to_df(sparse):
     df = df[['Prediction', 'User', 'Movie']].sort_values(['Movie', 'User'])
     df = df.reset_index(drop=True)
     return df
+    
+def prepare_data(df):
+    """
+    Prepare the data for the specific format used by PyFM.
+
+    Args:
+        df (pd.DataFrame): Initial DataFrame to transform
+
+    Returns:
+        data (array[dict]): Array of dict with user and movie ids
+        y (np.array): Ratings give in the initial pd.DataFrame
+        users (set): Set of user ids
+        movies (set): Set of movie ids
+
+    """
+    data = []
+    y = list(df.Prediction)
+    users = set(df.User.unique())
+    movies = set(df.Movie.unique())
+    usrs = list(df.User)
+    mvies = list(df.Movie)
+    for i in range(len(df)):
+        y[i] = float(y[i])
+        data.append({"user_id": str(usrs[i]), "movie_id": str(mvies[i])})
+    return (data, np.array(y), users, movies)
+    
