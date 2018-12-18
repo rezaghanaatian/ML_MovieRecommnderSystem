@@ -37,7 +37,8 @@ class SurpriseModel(PredictionModel):
 
         output = test.copy()
         for index, row in output.iterrows():
-            output.Prediction = self.model.predict(row.User, row.Movie, clip=True).est
+            prediction = self.model.predict(row.User, row.Movie, clip=True)
+            row.Prediction = prediction.est
         return output
 
     def cross_validate(self, k_fold=5):

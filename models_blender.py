@@ -1,5 +1,6 @@
 import time
 import scipy.optimize as sco
+import helpers
 
 from prediction_model import PredictionModel
 
@@ -32,6 +33,7 @@ class Blender(PredictionModel):
             prediction = model.predict(test_df)
             predictions.append(prediction)
             print(prediction.head())
+            helpers.create_submission_file(prediction, model.get_name() + "-output.csv", round_predictions=False)
             print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
 
         output = test_df.copy()
