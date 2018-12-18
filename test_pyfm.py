@@ -69,9 +69,9 @@ def factorization_machine_pyfm(train, test, **kwargs):
     """
     
     # hyper parameters
-    n_epochs = kwargs['n_epochs'] #30#
-    n_factors = kwargs['n_factors'] #30#
-    lr_all = kwargs['lr_all'] #0.001#
+    n_epochs = 200#kwargs['n_epochs']
+    n_factors = 20#kwargs['n_factors'] 
+    lr_all = 0.002#kwargs['lr_all']
     task = 'regression'
     learning_schedule = 'optimal'
     
@@ -191,7 +191,7 @@ error_svd_rescaled = cross_validator(factorization_machine_pyfm_normalized, trai
 #%% Optimizing the parameters
 n_epochs_list = [30, 100, 200]
 n_factors_list = [20, 30, 40]
-lr_list = [0.001] #[0.002, 0.001, 0.0005]
+lr_list = [0.002 0.001 0.002, 0.001, 0.0005]
 error_list = []
 param_list = []
 for ep in n_epochs_list:
