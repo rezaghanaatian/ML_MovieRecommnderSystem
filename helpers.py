@@ -22,9 +22,9 @@ def load_dataset(path_dataset):
 
     # Map each user-movie to their corresponding prediction
     output = df.join(user_movie_df)
-    #output = output.drop(columns=['Id'])
+    # output = output.drop(columns=['Id'])
     output = output.drop(labels=["Id"], axis=1)
-    
+
     # Remove "r" before id of each user
     output['User'] = output['User'].map(lambda x: x.lstrip('r').rstrip('')).astype(int)
 
@@ -94,7 +94,7 @@ def compute_error2(data_gt, data_pred):
     nz_gt = list(zip(nz_row, nz_col))
     pred_sp = df_to_sp(data_pred)
     for d, n in nz_gt:
-         mse += (gt_sp[d,n] - pred_sp[d,n]) **2
+        mse += (gt_sp[d, n] - pred_sp[d, n]) ** 2
     return np.sqrt(1.0 * mse / len(data_gt))
 
 
@@ -161,7 +161,7 @@ def cross_validator_param_opt(model, dataset, n_fold, **kwargs):
     return np.mean(errors)
 
 
-def create_submission_file(prediction, output_name="submission.csv"):
+def create_submission_file(prediction, output_name="submission.csv", round_predictions=True):
     """
         Generate submission file for uploading on Kaggle and save it in output folder.
 
@@ -183,7 +183,8 @@ def create_submission_file(prediction, output_name="submission.csv"):
         return round(row.Prediction)
 
     output['Id'] = output.apply(get_id, axis=1)
-    output['Prediction'] = output.apply(round_pred, axis=1)
+    if round_predictions:
+        output['Prediction'] = output.apply(round_pred, axis=1)
 
     output[['Id', 'Prediction']].to_csv(output_folder + output_name, index=False)
     return output[['Id', 'Prediction']]
@@ -206,6 +207,7 @@ def df_to_sp(df):
 
     return sp_matrix
 
+
 def sp_to_df(sparse):
     """ Convert scipy.sparse matrix to pandas.DataFrame """
 
@@ -215,5 +217,5 @@ def sp_to_df(sparse):
 
     df = pd.DataFrame({'Prediction': pred, 'User': col, 'Movie': row})
     df = df[['Prediction', 'User', 'Movie']].sort_values(['Movie', 'User'])
-    df=df.reset_index(drop=True)
+    df = df.reset_index(drop=True)
     return df

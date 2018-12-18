@@ -26,11 +26,13 @@ class Blender(PredictionModel):
             if not issubclass(type(model), PredictionModel):
                 continue
 
-            # print("[LOG] Preparing model === {0} ===".format(model.get_name()))
+            print("[LOG] Preparing model === {0} ===".format(model.get_name()))
             tt = time.time()
             model.fit(self.train_df)
-            predictions.append(model.predict(test_df))
-            # print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
+            prediction = model.predict(test_df)
+            predictions.append(prediction)
+            print(prediction.head())
+            print("[LOG] Prediction by {0} completed in {1}".format(model.get_name(), time.time() - tt))
 
         output = test_df.copy()
         output.Prediction = 0
@@ -38,9 +40,10 @@ class Blender(PredictionModel):
         # Use each model's weight to generate the final prediction
         for i in range(len(self.models)):
             output.Prediction += self.weights[i] * predictions[i].Prediction
+            print("[LOG] Improving predictions by {0} completed".format(self.models[i].get_name()))
 
         def round_prediction(row):
-            value = round(row.Prediction)
+            value = row.Prediction
             value = 5 if value > 5 else value
             value = 1 if value < 1 else value
             return value

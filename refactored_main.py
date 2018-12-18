@@ -12,7 +12,7 @@ from models_median import GlobalMedian, MovieMedian, UserMedian
 
 def main(args):
     start = time.time()
-    print("============\n[LOG] START\n============")
+    print("In the name of God\n============\n[LOG] START\n============")
 
     # Load Datasets
     path_dataset = "data/data_train.csv"
@@ -23,6 +23,8 @@ def main(args):
 
     # Initialize models here:
     prediction_models = []
+    knn = SurpriseKNN(k=60, user_based=False)
+    prediction_models.append(knn)
     global_mean = GlobalMean()
     prediction_models.append(global_mean)
     user_mean = UserMean()
@@ -35,20 +37,19 @@ def main(args):
     # prediction_models.append(movie_median)
     # user_median = UserMedian()
     # prediction_models.append(user_median)
-    knn = SurpriseKNN(k=60, user_based=False)
-    prediction_models.append(knn)
 
     # best_weights = Blender.tune_weights(prediction_models, train_df)
     # print(best_weights)
 
-    best_weights = [0.22, 0.22, 0.22, 0.34]
+    best_weights = [0.34, 0.22, 0.22, 0.22]
 
     blender_model = Blender(models=prediction_models, weights=best_weights)
     blender_model.fit(train_df)
     pred = blender_model.predict(test_df)
+    print(pred.head())
 
     print("============\n[LOG] SAVE RESULT IN CSV FILE\n============")
-    create_submission_file(pred, str("output.csv"))
+    create_submission_file(pred, str("output.csv"), round_predictions=False)
 
 
 if __name__ == "__main__":

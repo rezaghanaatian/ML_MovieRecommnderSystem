@@ -10,7 +10,7 @@ class GlobalMean(PredictionModel):
         output = test.copy()
         # calculate the global mean
         global_mean_train = self.train_df.Prediction.mean()
-        output.Prediction = round(global_mean_train)
+        output.Prediction = global_mean_train
         return output
 
 
@@ -28,7 +28,7 @@ class UserMean(PredictionModel):
         mean_prediction_by_user = self.train_df.groupby('User')[['Prediction']].mean()
 
         def assign_mean(row):
-            return round(mean_prediction_by_user[mean_prediction_by_user.index == row.User].iloc[0].Prediction)
+            return mean_prediction_by_user[mean_prediction_by_user.index == row.User].iloc[0].Prediction
 
         output['Prediction'] = output.apply(assign_mean, axis=1)
         return output
@@ -48,7 +48,7 @@ class MovieMean(PredictionModel):
         mean_prediction_by_movie = self.train_df.groupby('Movie')[['Prediction']].mean()
 
         def assign_mean(row):
-            return round(mean_prediction_by_movie[mean_prediction_by_movie.index == row.Movie].iloc[0].Prediction)
+            return mean_prediction_by_movie[mean_prediction_by_movie.index == row.Movie].iloc[0].Prediction
 
         output['Prediction'] = output.apply(assign_mean, axis=1)
         return output

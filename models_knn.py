@@ -17,7 +17,7 @@ class SurpriseModel(PredictionModel):
     def fit(self, train_df):
         reader = Reader(rating_scale=(1, 5))
         train_data = Dataset.load_from_df(train_df[['User', 'Movie', 'Prediction']], reader)
-        super(SurpriseModel, self).fit(train_df=train_data)
+        self.train_df = train_data
 
     def predict(self, test):
         """
@@ -37,8 +37,7 @@ class SurpriseModel(PredictionModel):
 
         output = test.copy()
         for index, row in output.iterrows():
-            output.Prediction = round(self.model.predict(row.User, row.Movie, clip=True).est)
-
+            output.Prediction = self.model.predict(row.User, row.Movie, clip=True).est
         return output
 
     def cross_validate(self, k_fold=5):
@@ -64,7 +63,7 @@ class SurpriseKNN(SurpriseModel):
                                       sim_options={'user_based': self.is_user_based})
 
     def cross_validate(self, k_fold=5):
-        super(SurpriseKNN, self).cross_validate(k_fold)
+        return super(SurpriseKNN, self).cross_validate(k_fold)
 
     def predict(self, test):
-        super(SurpriseKNN, self).predict(test)
+        return super(SurpriseKNN, self).predict(test)
