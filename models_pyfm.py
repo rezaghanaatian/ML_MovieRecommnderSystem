@@ -4,6 +4,7 @@ import scipy.sparse as sp
 from sklearn.feature_extraction import DictVectorizer
 from pyfm import pylibfm
 from prediction_model import PredictionModel
+from helpers import prepare_data
 
 
 
@@ -16,33 +17,7 @@ class PyFmModel(PredictionModel):
         super(PyFmModel, self).__init__()
         self.model = None
 
-    def fit(self, train_df):
-        
-        def prepare_data(df):
-            """
-            Prepare the data for the specific format used by PyFM.
-
-            Args:
-                df (pd.DataFrame): Initial DataFrame to transform
-
-            Returns:
-                data (array[dict]): Array of dict with user and movie ids
-                y (np.array): Ratings give in the initial pd.DataFrame
-                users (set): Set of user ids
-                movies (set): Set of movie ids
-
-            """
-            data = []
-            y = list(df.Prediction)
-            users = set(df.User.unique())
-            movies = set(df.Movie.unique())
-            usrs = list(df.User)
-            mvies = list(df.Movie)
-            for i in range(len(df)):
-                y[i] = float(y[i])
-                data.append({"user_id": str(usrs[i]), "movie_id": str(mvies[i])})
-            return (data, np.array(y), users, movies)
-        
+    def fit(self, train_df):     
         (train_data, train_pred, train_users, train_movies) = prepare_data(train_df)
         v = DictVectorizer()
         x_train = v.fit_transform(train_data)
@@ -94,32 +69,6 @@ class PyFmOptimizer(PyFmModel):
     def predict(self, test):
          
         output = test.copy()
-        
-        def prepare_data(df):
-            """
-            Prepare the data for the specific format used by PyFM.
-
-            Args:
-                df (pd.DataFrame): Initial DataFrame to transform
-
-            Returns:
-                data (array[dict]): Array of dict with user and movie ids
-                y (np.array): Ratings give in the initial pd.DataFrame
-                users (set): Set of user ids
-                movies (set): Set of movie ids
-
-            """
-            data = []
-            y = list(df.Prediction)
-            users = set(df.User.unique())
-            movies = set(df.Movie.unique())
-            usrs = list(df.User)
-            mvies = list(df.Movie)
-            for i in range(len(df)):
-                y[i] = float(y[i])
-                data.append({"user_id": str(usrs[i]), "movie_id": str(mvies[i])})
-            
-            return (data, np.array(y), users, movies)
         
         (test_data, test_pred, test_users, test_movies) = prepare_data(output)
       
