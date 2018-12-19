@@ -42,8 +42,7 @@ class SurpriseModel(PredictionModel):
                 prediction = 5
             if prediction < 1:
                 prediction = 1
-
-            row.Prediction = prediction
+            row.Prediction = round(prediction)
         return output
 
     def cross_validate(self, k_fold=5):
@@ -60,8 +59,6 @@ class SurpriseKNN(SurpriseModel):
         self.neighbors_num = k
         self.is_user_based = user_based
         self.use_baseline = baseline
-        print("userbased{0}".format(self.is_user_based))
-        print("neighbors{0}".format(self.neighbors_num))
         if self.use_baseline:
             self.model = KNNBaseline(k=self.neighbors_num,
                                      sim_options={'name': 'pearson_baseline', 'user_based': self.is_user_based})
