@@ -9,6 +9,7 @@ from models_median import GlobalMedian, MovieMedian, UserMedian
 from models_als import ALSOptimizer
 from models_sgd import SGDOptimizer
 from models_svd import SurpriseSVD, SurpriseSVDpp
+from models_pyfm import PyFmOptimizer
 
 
 """ load dataset """
@@ -24,7 +25,7 @@ def main(args):
 
     train_df = load_dataset(path_dataset)
     test_df = load_dataset(path_test_dataset)
-    train_def = train_df.head(20)
+    train_df = train_df.head(20)
     test_df = test_df.head(20)
 
     # Initialize models here:
@@ -49,8 +50,10 @@ def main(args):
     #prediction_models.append(sgd)
     #svd = SurpriseSVD()
     #prediction_models.append(svd)
-    svdpp = SurpriseSVDpp()
-    prediction_models.append(svdpp)
+    #svdpp = SurpriseSVDpp()
+    #prediction_models.append(svdpp)
+    model_pyfm = PyFmOptimizer()
+    prediction_models.append(model_pyfm)
     
     # best_weights = Blender.tune_weights(prediction_models, train_df)
     # print(best_weights)
