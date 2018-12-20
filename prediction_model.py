@@ -65,6 +65,7 @@ class PredictionModel(object):
         X_s = split_data(self.train_df, k_fold)
         errors = []
         for i in range(k_fold):
+            print("============\nIteration {0}/{1}\n============".format(i, k_fold))
             X_test = X_s[i]
             X_train = pd.DataFrame(columns=X_test.columns)
 
@@ -78,9 +79,5 @@ class PredictionModel(object):
             pred = model.predict(X_test)
             err = compute_error(X_test, pred)
             errors.append(err)
-
+            print("rmse result for iteration {0}: {1}\n============".format(i, err))
         return np.mean(errors)
-
-    @staticmethod
-    def round_prediction(row):
-        return round(row.Prediction)

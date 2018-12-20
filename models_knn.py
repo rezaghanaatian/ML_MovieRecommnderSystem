@@ -46,7 +46,7 @@ class SurpriseModel(PredictionModel):
         return output
 
     def cross_validate(self, k_fold=5):
-        return np.mean(cross_validate(self.model, self.train_df, measures=['RMSE', 'MAE'], cv=k_fold).test_rmse)
+        return np.mean(cross_validate(self.model, self.train_df, measures=['RMSE', 'MAE'], cv=k_fold)['test_rmse'])
 
 
 class SurpriseKNN(SurpriseModel):
@@ -70,7 +70,6 @@ class SurpriseKNN(SurpriseModel):
         return super(SurpriseKNN, self).cross_validate(k_fold)
 
     def predict(self, test):
-        print(self.model)
         return super(SurpriseKNN, self).predict(test)
 
     @staticmethod
