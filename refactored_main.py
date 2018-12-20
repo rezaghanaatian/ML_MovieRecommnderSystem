@@ -10,6 +10,7 @@ from models_als import ALSOptimizer
 from models_sgd import SGDOptimizer
 from models_svd import SurpriseSVD, SurpriseSVDpp
 from models_pyfm import PyFmOptimizer
+from models_funcpyfm import factorization_machine_pyfm
 
 
 """ load dataset """
@@ -25,13 +26,13 @@ def main(args):
 
     train_df = load_dataset(path_dataset)
     test_df = load_dataset(path_test_dataset)
-    train_df = train_df.head(20)
-    test_df = test_df.head(20)
+    train_df = train_df.head(100)
+    test_df = test_df.head(100)
 
     # Initialize models here:
     prediction_models = []
-    #knn = SurpriseKNN(k=60, user_based=False)
-    #prediction_models.append(knn)
+    knn = SurpriseKNN(k=60, user_based=False)
+    prediction_models.append(knn)
     #global_mean = GlobalMean()
     #prediction_models.append(global_mean)
     #user_mean = UserMean()
@@ -52,11 +53,11 @@ def main(args):
     #prediction_models.append(svd)
     #svdpp = SurpriseSVDpp()
     #prediction_models.append(svdpp)
-    model_pyfm = PyFmOptimizer()
-    prediction_models.append(model_pyfm)
+    #model_pyfm = PyFmOptimizer()
+    #prediction_models.append(model_pyfm)
     
-    # best_weights = Blender.tune_weights(prediction_models, train_df)
-    # print(best_weights)
+    best_weights = Blender.tune_weights(prediction_models, train_df)
+    print(best_weights)
 
     best_weights = [1] #0.22, 0.22, 0.22]
 
@@ -64,6 +65,9 @@ def main(args):
     blender_model.fit(train_df)
     pred = blender_model.predict(test_df)
     print(pred.head())
+    
+    pred_pyfm = factorization_machine_pyfm(train_df,test_df)
+    pred = 0.5*pred + 0.5*pred_pyfm
 
     print("============\n[LOG] SAVE RESULT IN CSV FILE\n============")
     create_submission_file(pred, "output.csv", round_predictions=False)
