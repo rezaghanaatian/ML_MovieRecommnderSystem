@@ -66,8 +66,9 @@ def main(args):
     pred = blender_model.predict(test_df)
     print(pred.head())
     
+    # Runnig pyFM will take a while, comment the following to avoid it!
     pred_pyfm = factorization_machine_pyfm(train_df,test_df)
-    pred = 0.5*pred + 0.5*pred_pyfm
+    pred = 0.7*pred + 0.3*pred_pyfm
 
     print("============\n[LOG] SAVE RESULT IN CSV FILE\n============")
     create_submission_file(pred, "output.csv", round_predictions=False)
