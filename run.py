@@ -14,8 +14,8 @@ print("In the name of God\n============\n[LOG] START\n============")
 path_dataset = "data/data_train.csv"
 path_test_dataset = "data/sample_submission.csv"
 
-train_df = load_dataset(path_dataset).head(20)
-test_df = load_dataset(path_test_dataset).head(10)
+train_df = load_dataset(path_dataset)
+test_df = load_dataset(path_test_dataset)
 
 prediction_models = []
 best_weights = []
@@ -27,12 +27,12 @@ best_weights.append(knn_weight)
 
 svd = SurpriseSVD()
 prediction_models.append(svd)
-svd_weight = 0.3
+svd_weight = 0.1
 best_weights.append(svd_weight)
 
 als = ALSOptimizer()
 prediction_models.append(als)
-als_weight = 0.1
+als_weight = 0.3
 best_weights.append(als_weight)
 
 # This line can be used for finding the best weight for each algorithm, but running it takes a long time.
