@@ -111,6 +111,14 @@ class ALSOptimizer(PredictionModel):
             return round(row.Prediction)
         
         output['Prediction'] = output.apply(round_pred, axis=1)
+        pred = list(output['Prediction'])
+        
+        for i in range(len(output)):
+            if pred[i] > 5:
+                pred[i] = 5
+            elif pred[i] < 1:
+                pred[i] = 1
+        output['Prediction'] = pred   
         output['Rating'] = output['Prediction']
        
         return output
