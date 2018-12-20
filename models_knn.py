@@ -1,6 +1,6 @@
 import numpy as np
 from surprise import Reader, Dataset, KNNWithMeans, KNNBaseline
-from surprise.model_selection import cross_validate
+from surprise.model_selection import cross_validate, GridSearchCV
 
 from prediction_model import PredictionModel
 
@@ -72,3 +72,26 @@ class SurpriseKNN(SurpriseModel):
     def predict(self, test):
         print(self.model)
         return super(SurpriseKNN, self).predict(test)
+
+    @staticmethod
+    def tune_weights(train_df):
+        """
+        Print best hyper parameters for the model
+        :param train_df: train data for calculating RMSE by cross-validation
+        :return: the found best weights for given models
+        """
+
+        param_grid = {'bsl_options': {'method': ['als', 'sgd']},
+                      'k': [40, 60, 90, 100, 200, 300],
+                      'sim_options': {'name': ['msd', 'cosine', 'pearson_baseline'],
+                                      'user_based': [False, True]}}
+
+        gs = GridSearchCV(KNNBaseline, param_grid, measures=['rmse', 'MAE'], cv=5)
+        reader = Reader(rating_scale=(1, 5))
+        train_data = Dataset.load_from_df(train_df[['User', 'Movie', 'Prediction']], reader)
+        gs.fit(train_data)
+
+        print("Best rmse:".format(gs.best_score['rmse']))
+
+        # combination of parameters that gave the best RMSE score
+        print("Best hyper parameters:".format(gs.best_params['rmse']))
